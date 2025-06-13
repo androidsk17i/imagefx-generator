@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block title %}ImageFX Generator - API Test Tool{% endblock %}
+
+{% block extra_css %}
+<style>
+    .endpoint-card {
+        margin-bottom: 1.5rem;
+    }
+    .response-container {
+        background-color: #f8f9fa;
+        border-radius: 4px;
+        padding: 1rem;
+        margin-top: 1rem;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+    .response-container pre {
+        margin: 0;
+        white-space: pre-wrap;
+    }
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    .form-group label {
+        font-weight: 500;
+    }
+    .required {
+        color: #dc3545;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">API Test Tool</h5>
+                <p class="card-text">Test the ImageFX Generator API endpoints directly from your browser.</p>
+            </div>
+        </div>
+
+        <!-- Generate Images Endpoint -->
+        <div class="card endpoint-card">
+            <div class="card-body">
+                <h5 class="card-title">Generate Images</h5>
+                <form id="generateForm" class="mb-3">
+                    <div class="form-group">
+                        <label for="generatePrompt">Prompt <span class="required">*</span></label>
+                        <input type="text" class="form-control" id="generatePrompt" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="generateCount">Count</label>
+                                <input type="number" class="form-control" id="generateCount" min="1" max="8" value="4">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="generateSeed">Seed</label>
+                                <input type="number" class="form-control" id="generateSeed">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="generateAspectRatio">Aspect Ratio</label>
+                                <select class="form-select" id="generateAspectRatio">
+                                    <option value="IMAGE_ASPECT_RATIO_LANDSCAPE">Landscape</option>
+                                    <option value="IMAGE_ASPECT_RATIO_PORTRAIT">Portrait</option>
+                                    <option value="IMAGE_ASPECT_RATIO_SQUARE">Square</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="generateModel">Model</label>
+                                <select class="form-select" id="generateModel">
+                                    <option value="IMAGEN_3_1">IMAGEN_3_1</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Test Endpoint</button>
+                </form>
+                <div class="response-container" id="generateResponse"></div>
+            </div>
+        </div>
+
+        <!-- Random Prompt Endpoint -->
+        <div class="card endpoint-card">
+            <div class="card-body">
+                <h5 class="card-title">Generate Random Prompt</h5>
+                <form id="randomPromptForm" class="mb-3">
+                    <div class="form-group">
+                        <label for="randomPromptSubject">Subject <span class="required">*</span></label>
+                        <input type="text" class="form-control" id="randomPromptSubject" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Test Endpoint</button>
+                </form>
+                <div class="response-container" id="randomPromptResponse"></div>
+            </div>
+        </div>
+
+        <!-- Get Settings Endpoint -->
+        <div class="card endpoint-card">
+            <div class="card-body">
+                <h5 class="card-title">Get Settings</h5>
+                <button id="getSettingsBtn" class="btn btn-primary">Test Endpoint</button>
+                <div class="response-container" id="getSettingsResponse"></div>
+            </div>
+        </div>
+
+        <!-- Update Settings Endpoint -->
+        <div class="card endpoint-card">
+            <div class="card-body">
+                <h5 class="card-title">Update Settings</h5>
+                <form id="updateSettingsForm" class="mb-3">
+                    <div class="form-group">
+                        <label for="updateSettingsAuthToken">Auth Token</label>
+                        <input type="password" class="form-control" id="updateSettingsAuthToken">
+                    </div>
+                    <div class="form-group">
+                        <label for="updateSettingsDefaultCount">Default Count</label>
+                        <input type="number" class="form-control" id="updateSettingsDefaultCount" min="1" max="8" value="4">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Test Endpoint</button>
+                </form>
+                <div class="response-container" id="updateSettingsResponse"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Helper function to display response
+    function displayResponse(containerId, data) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+    }
+
+    // Generate Images
+    document.getElementById('generateForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const prompt = document.getElementById('generatePrompt').value;
+        const count = document.getElementById('generateCount').value;
+        const seed = document.getElementById('generateSeed').value;
+        const aspectRatio = document.getElementById('generateAspectRatio').value;
+        const model = document.getElementById('generateModel').value;
+
+        try {
+            const response = await fetch(`/api/generate?prompt=${encodeURIComponent(prompt)}&count=${count}&seed=${seed}&aspectRatio=${aspectRatio}&model=${model}`);
+            const data = await response.json();
+            displayResponse('generateResponse', data);
+        } catch (error) {
+            displayResponse('generateResponse', { error: error.message });
+        }
+    });
+
+    // Random Prompt
+    document.getElementById('randomPromptForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const subject = document.getElementById('randomPromptSubject').value;
+
+        try {
+            const response = await fetch('/api/random-prompt', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ subject }),
+            });
+            const data = await response.json();
+            displayResponse('randomPromptResponse', data);
+        } catch (error) {
+            displayResponse('randomPromptResponse', { error: error.message });
+        }
+    });
+
+    // Get Settings
+    document.getElementById('getSettingsBtn').addEventListener('click', async function() {
+        try {
+            const response = await fetch('/api/settings');
+            const data = await response.json();
+            displayResponse('getSettingsResponse', data);
+        } catch (error) {
+            displayResponse('getSettingsResponse', { error: error.message });
+        }
+    });
+
+    // Update Settings
+    document.getElementById('updateSettingsForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const authToken = document.getElementById('updateSettingsAuthToken').value;
+        const defaultCount = document.getElementById('updateSettingsDefaultCount').value;
+
+        try {
+            const response = await fetch('/api/settings', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ authToken, defaultCount }),
+            });
+            const data = await response.json();
+            displayResponse('updateSettingsResponse', data);
+        } catch (error) {
+            displayResponse('updateSettingsResponse', { error: error.message });
+        }
+    });
+});
+</script>
+{% endblock %} 

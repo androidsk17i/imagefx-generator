@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}ImageFX Generator - API Documentation{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">API Documentation</h5>
+                <p class="card-text">The ImageFX Generator provides a RESTful API for generating images programmatically.</p>
+                
+                <h6 class="mt-4">Authentication</h6>
+                <p>All API requests require an ImageFX auth token. You can set this in the <a href="/settings">Settings</a> page.</p>
+
+                <h6 class="mt-4">Endpoints</h6>
+
+                <div class="endpoint mb-4">
+                    <h6>Generate Images</h6>
+                    <pre><code>POST /api/generate</code></pre>
+                    
+                    <h6>Query Parameters:</h6>
+                    <ul>
+                        <li><code>prompt</code> (required): The text prompt for image generation</li>
+                        <li><code>count</code> (optional): Number of images to generate (1-8, default: 4)</li>
+                        <li><code>seed</code> (optional): Seed for reproducible results</li>
+                        <li><code>aspectRatio</code> (optional): Image aspect ratio (default: IMAGE_ASPECT_RATIO_LANDSCAPE)
+                            <ul>
+                                <li><code>IMAGE_ASPECT_RATIO_LANDSCAPE</code></li>
+                                <li><code>IMAGE_ASPECT_RATIO_PORTRAIT</code></li>
+                                <li><code>IMAGE_ASPECT_RATIO_SQUARE</code></li>
+                            </ul>
+                        </li>
+                        <li><code>model</code> (optional): Model to use (default: IMAGEN_3_1)</li>
+                    </ul>
+
+                    <h6>Example Request:</h6>
+                    <pre><code>GET /api/generate?prompt=a%20young%20woman%20sitting%20in%20a%20cafe&count=4</code></pre>
+
+                    <h6>Example Response:</h6>
+                    <pre><code>{
+    "success": true,
+    "images": [
+        {
+            "url": "data:image/png;base64,...",
+            "seed": 123456,
+            "prompt": "a young woman sitting in a cafe"
+        },
+        ...
+    ]
+}</code></pre>
+                </div>
+
+                <div class="endpoint mb-4">
+                    <h6>Generate Random Prompt</h6>
+                    <pre><code>POST /api/random-prompt</code></pre>
+                    
+                    <h6>Request Body:</h6>
+                    <pre><code>{
+    "subject": "a young woman"
+}</code></pre>
+
+                    <h6>Example Response:</h6>
+                    <pre><code>{
+    "prompt": "a young woman casually sitting in a cozy cafe in natural daylight, candid amateur photo, taken with a disposable camera"
+}</code></pre>
+                </div>
+
+                <div class="endpoint mb-4">
+                    <h6>Get Settings</h6>
+                    <pre><code>GET /api/settings</code></pre>
+
+                    <h6>Example Response:</h6>
+                    <pre><code>{
+    "authToken": "********",
+    "defaultCount": 4
+}</code></pre>
+                </div>
+
+                <div class="endpoint">
+                    <h6>Update Settings</h6>
+                    <pre><code>POST /api/settings</code></pre>
+                    
+                    <h6>Request Body:</h6>
+                    <pre><code>{
+    "authToken": "your-auth-token",
+    "defaultCount": 4
+}</code></pre>
+
+                    <h6>Example Response:</h6>
+                    <pre><code>{
+    "message": "Settings saved successfully"
+}</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">API Test Tool</h5>
+                <p class="card-text">Try out the API endpoints using our <a href="/api/test">API Test Tool</a>.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

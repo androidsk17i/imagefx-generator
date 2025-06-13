@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}ImageFX Generator - Settings{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Settings</h5>
+                <form id="settingsForm">
+                    <div class="mb-3">
+                        <label for="authToken" class="form-label">ImageFX Auth Token</label>
+                        <input type="password" class="form-control" id="authToken" placeholder="Enter your ImageFX auth token">
+                        <div class="form-text">Your auth token is required to generate images. Get it from the ImageFX website.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="defaultCount" class="form-label">Default Number of Images</label>
+                        <input type="number" class="form-control" id="defaultCount" min="1" max="8" value="4">
+                        <div class="form-text">Number of images to generate by default (1-8)</div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save Settings</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="toast-header">
+        <strong class="me-auto">Notification</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+    <div class="toast-body"></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const settingsForm = document.getElementById('settingsForm');
+    const toast = new bootstrap.Toast(document.querySelector('.toast'));
+
+    // Load current settings
+    fetch('/api/settings')
+        .then(response => response.json())
+        .then(settings => {
+            document.getElementById('authToken').value = settings.authToken || '';
+            document.getElementById('defaultCount').value = settings.defaultCount || 4;
+        })
+        .catch(error => {
+            showToast('Error loading settings: ' + error.message, 'error');
+        });
+
+    function showToast(message, type = 'success') {
+        const toastEl = document.querySelector('.toast');
+        toastEl.querySelector('.toast-body').textContent = message;
+        toastEl.classList.remove('bg-success', 'bg-danger');
+        toastEl.classList.add(type === 'success' ? 'bg-success' : 'bg-danger');
+        toast.show();
+    }
+
+    settingsForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const settings = {
+            authToken: document.getElementById('authToken').value,
+            defaultCount: parseInt(document.getElementById('defaultCount').value)
+        };
+
+        try {
+            const response = await fetch('/api/settings', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(settings)
+            });
+
+            const data = await response.json();
+            
+            if (data.error) {
+                throw new Error(data.error);
+            }
+
+            showToast('Settings saved successfully!');
+        } catch (error) {
+            showToast('Error saving settings: ' + error.message, 'error');
+        }
+    });
+});
+</script>
+{% endblock %} 
